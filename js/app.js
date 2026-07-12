@@ -112,7 +112,10 @@
       return `<div class="item-card__media"><img src="${item.image}" alt="${item.name}" loading="lazy" width="96" height="96"></div>`;
     }
     const label = item.placeholder || item.name;
-    return `<div class="item-card__media"><div class="item-card__placeholder">[PLACEHOLDER:<br>${label}]</div>${item.soldOut ? '<div class="soldout-badge">Sold Out<br>Today</div>' : ""}</div>`;
+    return `<div class="item-card__media"><div class="item-card__placeholder">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2v8a2 2 0 0 1-2 2 2 2 0 0 1-2-2V2m2 20v-8M17 2v20M17 2c-2 0-3 2-3 5s1 4 3 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      [PLACEHOLDER: ${label}]
+    </div>${item.soldOut ? '<div class="soldout-badge">Sold Out<br>Today</div>' : ""}</div>`;
   }
 
   function renderGrid(category, targetId) {
@@ -315,6 +318,7 @@
     bar.hidden = qty === 0;
     document.getElementById("bottom-cart-count").textContent = `${qty} item${qty === 1 ? "" : "s"}`;
     document.getElementById("bottom-cart-total").textContent = money(cartSubtotal());
+    document.getElementById("cart-live").textContent = `Cart: ${qty} item${qty === 1 ? "" : "s"}, ${money(cartSubtotal())}`;
   }
 
   const DELIVERY_FEE = 4.99;
@@ -443,27 +447,58 @@
   const bottomCartBtn = document.getElementById("bottom-cart-btn");
 
   let lastFocused = null;
+  let activeSheet = null;
+  const inertTargets = [document.getElementById("main"), document.querySelector(".site-header"), document.querySelector(".site-footer"), document.getElementById("bottom-cart-bar")];
+
+  function focusableEls(sheet) {
+    return Array.from(sheet.querySelectorAll('button:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'))
+      .filter(el => el.offsetParent !== null);
+  }
 
   function showSheet(overlay, sheet) {
     lastFocused = document.activeElement;
+    activeSheet = sheet;
     overlay.hidden = false;
     sheet.hidden = false;
     document.body.style.overflow = "hidden";
+    inertTargets.forEach(el => el && el.setAttribute("inert", ""));
     const focusable = sheet.querySelector("button, input, a");
     focusable?.focus();
-    document.addEventListener("keydown", escHandler);
+    document.addEventListener("keydown", sheetKeyHandler);
+    if (sheet === cartSheet) {
+      cartToggle.setAttribute("aria-expanded", "true");
+    }
   }
   function closeSheet(overlay, sheet) {
     overlay.hidden = true;
     sheet.hidden = true;
     document.body.style.overflow = "";
-    document.removeEventListener("keydown", escHandler);
+    inertTargets.forEach(el => el && el.removeAttribute("inert"));
+    document.removeEventListener("keydown", sheetKeyHandler);
+    activeSheet = null;
     lastFocused?.focus();
+    if (sheet === cartSheet) {
+      cartToggle.setAttribute("aria-expanded", "false");
+    }
   }
-  function escHandler(e) {
+  function sheetKeyHandler(e) {
     if (e.key === "Escape") {
       if (!itemSheet.hidden) closeSheet(itemOverlay, itemSheet);
       if (!cartSheet.hidden) closeSheet(cartOverlay, cartSheet);
+      return;
+    }
+    if (e.key === "Tab" && activeSheet) {
+      const els = focusableEls(activeSheet);
+      if (els.length === 0) return;
+      const first = els[0];
+      const last = els[els.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     }
   }
 
