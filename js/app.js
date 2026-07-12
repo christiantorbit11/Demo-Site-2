@@ -60,7 +60,7 @@
     { id: "strawberry-lemonade", category: "beverages", name: "Strawberry Lemonade", price: 3.49, desc: "", image: null, placeholder: "Strawberry Lemonade" },
     { id: "southern-peach-tea", category: "beverages", name: "Southern Peach Tea", price: 3.49, desc: "", image: null, placeholder: "Southern Peach Tea" },
     { id: "white-peach-lemonade", category: "beverages", name: "White Peach Lemonade", price: 3.49, desc: "", image: null, placeholder: "White Peach Lemonade" },
-    { id: "half-and-half", category: "beverages", name: "Half & Half", price: 3.49, desc: "", image: null, placeholder: "Half & Half" },
+    { id: "half-and-half", category: "beverages", name: "Half & Half", price: 3.49, desc: "Half lemonade, half sweet tea.", image: null, placeholder: "Half & Half" },
   ];
 
   const money = n => `$${n.toFixed(2)}`;
@@ -108,14 +108,15 @@
   ========================================================= */
 
   function mediaMarkup(item) {
+    const badge = item.soldOut ? '<div class="soldout-badge">Sold Out<br>Today</div>' : "";
     if (item.image) {
-      return `<div class="item-card__media"><img src="${item.image}" alt="${item.name}" loading="lazy" width="96" height="96"></div>`;
+      return `<div class="item-card__media"><img src="${item.image}" alt="${item.name}" loading="lazy" width="96" height="96">${badge}</div>`;
     }
     const label = item.placeholder || item.name;
     return `<div class="item-card__media"><div class="item-card__placeholder">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2v8a2 2 0 0 1-2 2 2 2 0 0 1-2-2V2m2 20v-8M17 2v20M17 2c-2 0-3 2-3 5s1 4 3 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       [PLACEHOLDER: ${label}]
-    </div>${item.soldOut ? '<div class="soldout-badge">Sold Out<br>Today</div>' : ""}</div>`;
+    </div>${badge}</div>`;
   }
 
   function renderGrid(category, targetId) {
@@ -283,9 +284,20 @@
      Cart operations
   ========================================================= */
 
+  function sameSelection(a, b) {
+    const sidesA = (a.sides || []).slice().sort().join("|");
+    const sidesB = (b.sides || []).slice().sort().join("|");
+    return sidesA === sidesB && (a.sauce || null) === (b.sauce || null);
+  }
+
   function addToCart(entry) {
-    entry.cartId = `c${Date.now()}${Math.random().toString(36).slice(2, 6)}`;
-    cart.push(entry);
+    const existing = cart.find(i => i.menuId === entry.menuId && sameSelection(i, entry));
+    if (existing) {
+      existing.qty += entry.qty;
+    } else {
+      entry.cartId = `c${Date.now()}${Math.random().toString(36).slice(2, 6)}`;
+      cart.push(entry);
+    }
     saveCart();
     renderCart();
   }
