@@ -348,10 +348,10 @@
             ${item.sides && item.sides.length ? `<p class="cart-item__sub">Sides: ${item.sides.join(", ")}</p>` : ""}
             ${item.sauce ? `<p class="cart-item__sub">Flavor: ${item.sauce}</p>` : ""}
             <div class="cart-item__qty-row">
-              <button type="button" data-qty-minus="${item.cartId}" aria-label="Decrease quantity of ${item.name}">&minus;</button>
+              <button type="button" class="qty-btn" data-qty-minus="${item.cartId}" aria-label="Decrease quantity of ${item.name}">&minus;</button>
               <span>${item.qty}</span>
-              <button type="button" data-qty-plus="${item.cartId}" aria-label="Increase quantity of ${item.name}">+</button>
-              <button type="button" data-remove="${item.cartId}" aria-label="Remove ${item.name}" style="margin-left:8px;color:var(--hot);background:none;border:none;font-size:.78rem;cursor:pointer;">Remove</button>
+              <button type="button" class="qty-btn" data-qty-plus="${item.cartId}" aria-label="Increase quantity of ${item.name}">+</button>
+              <button type="button" class="cart-item__remove" data-remove="${item.cartId}" aria-label="Remove ${item.name}">Remove</button>
             </div>
           </div>
           <div class="cart-item__right">
