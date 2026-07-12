@@ -143,6 +143,11 @@ input:focus-visible,
   scroll-snap-align: start;
 }
 .category-nav a:hover { color: var(--buttermilk); border-color: var(--orange); }
+.category-nav a.is-active {
+  background: var(--orange);
+  color: #fff;
+  border-color: var(--orange);
+}
 
 /* ---------------------------------------------------------
    Hero

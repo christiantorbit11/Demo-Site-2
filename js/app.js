@@ -586,6 +586,44 @@
   }
 
   /* =========================================================
+     Category nav scrollspy
+  ========================================================= */
+
+  function initScrollspy() {
+    const navLinks = Array.from(document.querySelectorAll(".category-nav a"));
+    const sections = navLinks
+      .map(a => document.getElementById(a.getAttribute("href").slice(1)))
+      .filter(Boolean);
+    if (!("IntersectionObserver" in window) || sections.length === 0) return;
+
+    const headerEl = document.querySelector(".site-header");
+    const setActive = id => {
+      navLinks.forEach(a => {
+        const isActive = a.getAttribute("href") === `#${id}`;
+        a.classList.toggle("is-active", isActive);
+        if (isActive) {
+          a.setAttribute("aria-current", "true");
+          a.scrollIntoView({ block: "nearest", inline: "center", behavior: "auto" });
+        } else {
+          a.removeAttribute("aria-current");
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(entries => {
+      const visible = entries.filter(e => e.isIntersecting);
+      if (visible.length === 0) return;
+      visible.sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      setActive(visible[0].target.id);
+    }, {
+      rootMargin: `-${(headerEl?.offsetHeight || 100) + 10}px 0px -60% 0px`,
+      threshold: [0, 0.25, 0.5, 0.75, 1],
+    });
+
+    sections.forEach(s => observer.observe(s));
+  }
+
+  /* =========================================================
      Init
   ========================================================= */
 
@@ -595,5 +633,6 @@
   renderCart();
   updateOpenStatus();
   setInterval(updateOpenStatus, 60000);
+  initScrollspy();
 
 })();
